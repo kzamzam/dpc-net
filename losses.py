@@ -63,7 +63,8 @@ class SO3GeodesicLoss(nn.Module):
 #See Peretroukhin et al. (ICRA 2018)
 class SE3GeodesicLossFn(torch.autograd.Function):
 
-    def forward(self, input, target_T_inv, precision):
+    @staticmethod
+    def forward(self,input, target_T_inv, precision):
 
         self.save_for_backward(input, target_T_inv, precision)
         num_samples = input.size(0)
@@ -86,6 +87,7 @@ class SE3GeodesicLossFn(torch.autograd.Function):
         #print('g_xi: {}'.format(g_xi))
         return input.new([loss])
 
+    @staticmethod
     def backward(self, grad_output):
         input, target_T_inv, precision = self.saved_tensors
         batch_size = input.size(0)
@@ -119,7 +121,7 @@ class SE3GeodesicLoss(nn.Module):
     def forward(self, input, target_T_inv, precision):
         _assert_no_grad(target_T_inv)
         _assert_no_grad(precision)
-        return SE3GeodesicLossFn()(input, target_T_inv, precision)
+        return SE3GeodesicLossFn.apply(input, target_T_inv, precision)
 
 
 
@@ -129,15 +131,16 @@ def compute_loss_rot(image_quad, target, model, loss_fn, precision, config, mode
 
     if config['use_cuda']:
         if mode == 'eval':
-            target_C_inv = Variable(target.transpose(1,2).contiguous().cuda(async=True), volatile=True)
-            precision = Variable(precision.cuda(async=True), volatile=True)
-            img_1 = Variable(image_quad[0].cuda(), volatile=True)
-            img_2 = Variable(image_quad[2].cuda(), volatile=True)
+            with torch.no_grad():
+                target_C_inv = Variable(target.transpose(1,2).contiguous().cuda(non_blocking=True))
+                precision = Variable(precision.cuda(non_blocking=True))
+                img_1 = Variable(image_quad[0].cuda())
+                img_2 = Variable(image_quad[2].cuda())
             # stereo_img_1 = Variable(torch.cat((image_quad[0], image_quad[1]), 1).cuda(), volatile=True)
             # stereo_img_2 = Variable(torch.cat((image_quad[2], image_quad[3]), 1).cuda(), volatile=True)
         else:
-            target_C_inv = Variable(target.transpose(1,2).contiguous().cuda(async=True))
-            precision = Variable(precision.cuda(async=True))
+            target_C_inv = Variable(target.transpose(1,2).contiguous().cuda(non_blocking=True))
+            precision = Variable(precision.cuda(non_blocking=True))
             img_1 = Variable(image_quad[0].cuda())
             img_2 = Variable(image_quad[2].cuda())
             # stereo_img_1 = Variable(torch.cat((image_quad[0], image_quad[1]), 1).cuda())
@@ -163,11 +166,12 @@ def compute_loss_yaw(image_quad, target, model, loss_fn, precision, config, mode
 
     if config['use_cuda']:
         if mode == 'eval':
-            target_yaw = Variable(target.cuda(async=True), volatile=True)
-            img_1 = Variable(image_quad[0].cuda(), volatile=True)
-            img_2 = Variable(image_quad[2].cuda(), volatile=True)
+            with torch.no_grad():
+                target_yaw = Variable(target.cuda(non_blocking=True))
+                img_1 = Variable(image_quad[0].cuda())
+                img_2 = Variable(image_quad[2].cuda())
         else:
-            target_yaw = Variable(target.cuda(async=True))
+            target_yaw = Variable(target.cuda(non_blocking=True))
             img_1 = Variable(image_quad[0].cuda())
             img_2 = Variable(image_quad[2].cuda())
  
@@ -188,13 +192,14 @@ def compute_loss(image_quad, target, model, loss_fn, precision, config, mode='tr
 
     if config['use_cuda']:
         if mode == 'eval':
-            target_T_inv = Variable(se3_inv(target).cuda(async=True), volatile=True)
-            precision = Variable(precision.cuda(async=True), volatile=True)
-            stereo_img_1 = Variable(torch.cat((image_quad[0], image_quad[1]), 1).cuda(), volatile=True)
-            stereo_img_2 = Variable(torch.cat((image_quad[2], image_quad[3]), 1).cuda(), volatile=True)
+            with torch.no_grad():
+                target_T_inv = Variable(se3_inv(target).cuda(non_blocking=True))
+                precision = Variable(precision.cuda(non_blocking=True))
+                stereo_img_1 = Variable(torch.cat((image_quad[0], image_quad[1]), 1).cuda())
+                stereo_img_2 = Variable(torch.cat((image_quad[2], image_quad[3]), 1).cuda())
         else:
-            target_T_inv = Variable(se3_inv(target).cuda(async=True))
-            precision = Variable(precision.cuda(async=True))
+            target_T_inv = Variable(se3_inv(target).cuda(non_blocking=True))
+            precision = Variable(precision.cuda(non_blocking=True))
             stereo_img_1 = Variable(torch.cat((image_quad[0], image_quad[1]), 1).cuda())
             stereo_img_2 = Variable(torch.cat((image_quad[2], image_quad[3]), 1).cuda())
 

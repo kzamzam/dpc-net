@@ -380,10 +380,10 @@ def compute_corrected_stats(tm_mat_path, predictions, targets, p_idx_delta, corr
     trans_err_norm_corr, rot_err_norm_corr = tm_corr.mean_err(error_type='traj')
     
 
-    seg_lengths = list(range(100,801,100))
-    _, avg_seg_errs_corr = tm_corr.segment_errors(seg_lengths, rot_unit='deg')
-    _, avg_seg_errs_corr_opt = tm_corr_opt.segment_errors(seg_lengths, rot_unit='deg')
-    _, avg_seg_errs_orig = tm_orig.segment_errors(seg_lengths, rot_unit='deg')
+    # seg_lengths = list(range(100,801,100))
+    # _, avg_seg_errs_corr = tm_corr.segment_errors(seg_lengths, rot_unit='deg')
+    # _, avg_seg_errs_corr_opt = tm_corr_opt.segment_errors(seg_lengths, rot_unit='deg')
+    # _, avg_seg_errs_orig = tm_orig.segment_errors(seg_lengths, rot_unit='deg')
 
 
     if output_tm_mat_path:
@@ -402,9 +402,9 @@ def compute_corrected_stats(tm_mat_path, predictions, targets, p_idx_delta, corr
     print('Baseline Mean Norm (Trans / Rot): {:.5f} (m) / {:.5f} (a-a)'.format(trans_err_norm, rot_err_norm))
     print('Corrected Mean Norm (Trans / Rot): {:.5f} (m) / {:.5f} (a-a)'.format(trans_err_norm_corr, rot_err_norm_corr))
 
-    print('Baseline Seg Length Err (Trans / Rot): {:.5f} (%) / {:.5f} (deg/m)'.format(100*np.mean(avg_seg_errs_orig[:,1]), np.mean(avg_seg_errs_orig[:,2])))
-    print('Corrected Seg Length Err (Trans / Rot): {:.5f} (%) / {:.5f} (deg/m)'.format(100*np.mean(avg_seg_errs_corr[:,1]), np.mean(avg_seg_errs_corr[:,2])))
-    print('Perfectly Corrected Seg Length Err (Trans / Rot): {:.5f} (%) / {:.5f} (deg/m)'.format(100*np.mean(avg_seg_errs_corr_opt[:,1]), np.mean(avg_seg_errs_corr_opt[:,2])))
+    # print('Baseline Seg Length Err (Trans / Rot): {:.5f} (%) / {:.5f} (deg/m)'.format(100*np.mean(avg_seg_errs_orig[:,1]), np.mean(avg_seg_errs_orig[:,2])))
+    # print('Corrected Seg Length Err (Trans / Rot): {:.5f} (%) / {:.5f} (deg/m)'.format(100*np.mean(avg_seg_errs_corr[:,1]), np.mean(avg_seg_errs_corr[:,2])))
+    # print('Perfectly Corrected Seg Length Err (Trans / Rot): {:.5f} (%) / {:.5f} (deg/m)'.format(100*np.mean(avg_seg_errs_corr_opt[:,1]), np.mean(avg_seg_errs_corr_opt[:,2])))
 
 
     traj_stats = {

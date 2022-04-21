@@ -24,7 +24,7 @@ from net import *
 from losses import *
 
 def main():
-    test_trials = ['00','02','05'] #KITTI Trials
+    test_trials = ['seq0'] #KITTI Trials
     correction_type = 'pose'  #yaw, rotation, or pose
     for t_i, test_trial in enumerate(test_trials):
         train_sequence(test_trial, correction_type)
@@ -34,13 +34,13 @@ def train_sequence(test_seq, correction_type):
     system_config = {'use_cuda': True, 
             'validate_output_interval': 20, 
             'train_output_interval': 50,
-            'num_loader_workers': 12,
-            'base_folder': '/media/raid5-array/experiments/Deep-PC/' #Needs trailing slash
+            'num_loader_workers': 4,
+            'base_folder': '/home/zamzam/Thesis/VIO/field-supervised-processed' 
     }
 
     # define the CNN and move the network into GPU
     train_config = {'kitti_test_seq': test_seq,
-                    'batch_size': 64,
+                    'batch_size': 32,
                     'num_epochs': 25,
                     'optimizer': 'Adam',    
                     'img_type': 'rgb', #rgb or mono
@@ -130,14 +130,13 @@ def train_sequence(test_seq, correction_type):
     best_valid_loss = 10
     for epoch in range(1, train_config['num_epochs'] + 1):
         
-        scheduler.step()
         
         if epoch == 1:
             avg_valid_loss = validate(valid_loader, pose_corrector_net, loss_fn, precision, system_config, correction_type)
             print('Initial validation loss: {:.2E}'.format(avg_valid_loss))
 
         print('Training for test seq. {}. Starting epoch {} / {}. Learning rate set to: {}.'.format(train_config['kitti_test_seq'], epoch, train_config['num_epochs'], scheduler.get_lr()))
-        train(epoch, pose_corrector_net, train_loader, optimizer, loss_fn, precision, system_config, correction_type)
+        train(epoch, pose_corrector_net, train_loader, optimizer, loss_fn, precision, system_config, correction_type, scheduler)
 
         avg_valid_loss = validate(valid_loader, pose_corrector_net, loss_fn, precision, system_config, correction_type)
         print('Validation completed in: {:.2f}. Current avg. validation loss: {:.2E}'.format(time.time() - end, avg_valid_loss))
@@ -165,7 +164,7 @@ def train_sequence(test_seq, correction_type):
 
         
 
-def train(epoch, model, train_loader, optimizer, loss_fn, precision, config, correction_type):
+def train(epoch, model, train_loader, optimizer, loss_fn, precision, config, correction_type, scheduler):
     print('Training...')
 
     batch_time = AverageMeter()
@@ -195,6 +194,7 @@ def train(epoch, model, train_loader, optimizer, loss_fn, precision, config, cor
         loss.backward()
 
         optimizer.step()
+        scheduler.step()
 
         # measure elapsed time
         batch_time.update(time.time() - end)

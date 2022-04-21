@@ -1,8 +1,8 @@
 import torch
 global EPS
 EPS=1e-12
-from liegroups.torch.so3 import SO3
-from liegroups.torch.se3 import SE3
+from liegroups.torch import SO3
+from liegroups.torch import SE3
 
 
 def so3_wedge(phi):
@@ -328,7 +328,7 @@ def se3_wedge(xi):
     rho = xi[:, 0:3]
     phi = xi[:, 3:6]
     Phi = so3_wedge(phi)
-
+    rho = rho[:,:,None]
     Xi[:, 0:3, 0:3] = Phi
     Xi[:, 0:3, 3:4] = rho
     
@@ -379,6 +379,7 @@ def se3_exp(xi):
     #output: T Nx4x4
     #New efficient way without having to compute Q!
 
+    
     if xi.dim() < 2:
         xi = xi.unsqueeze(0)
     

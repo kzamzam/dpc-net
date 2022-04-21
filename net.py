@@ -46,7 +46,7 @@ class DeepPoseCorrectorStereoFullPose(nn.Module):
             conv_basic( True, 1024, 4096, kernel_size=3, stride=2,padding=1),
             conv_basic( True, 4096, 4096, kernel_size=3, stride=2,padding=1),
             conv_basic( True, 4096, 6, kernel_size=3, stride=2,padding=1),
-            nn.Conv2d(6, 6, kernel_size=(1,2), stride=2,padding=0)
+            nn.Conv2d(6, 6, kernel_size=(2,1), stride=2,padding=0)
         ) 
 
         self._initialize_weights()

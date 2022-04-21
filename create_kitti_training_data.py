@@ -43,19 +43,19 @@ def compute_vo_pose_errors(tm, pose_deltas, eval_type='train', add_reverse=False
 def get_image_paths(data_path, trial_str, pose_deltas, img_type='rgb', eval_type='train', add_reverse=False):
 
     if img_type == 'rgb':
-        impath_l = os.path.join(data_path, 'image_02', 'data', '*.png')
-        impath_r = os.path.join(data_path, 'image_03', 'data', '*.png')
+        impath_l = os.path.join(data_path, 'image_02', '*.png')
+        impath_r = os.path.join(data_path, 'image_03', '*.png')
     elif img_type == 'mono':
-        impath_l = os.path.join(data_path, 'image_00', 'data', '*.png')
-        impath_r = os.path.join(data_path, 'image_01', 'data', '*.png')
+        impath_l = os.path.join(data_path, 'image_00', '*.png')
+        impath_r = os.path.join(data_path, 'image_01', '*.png')
     else:
         raise ValueError('img_type must be `rgb` or `mono`')
     
     imfiles_l = sorted(glob.glob(impath_l))
     imfiles_r = sorted(glob.glob(impath_r))
 
-    imfiles_l = [imfiles_l[i] for i in KITTI_SEQS_DICT[trial_str]['frames']]
-    imfiles_r = [imfiles_r[i] for i in KITTI_SEQS_DICT[trial_str]['frames']]
+    #imfiles_l = [imfiles_l[i] for i in KITTI_SEQS_DICT[trial_str]['frames']]
+    #imfiles_r = [imfiles_r[i] for i in KITTI_SEQS_DICT[trial_str]['frames']]
 
     image_paths = []
     for p_delta in pose_deltas:
@@ -90,9 +90,9 @@ def process_ground_truth(trial_strs, tm_path, kitti_path, pose_deltas, eval_type
     tm_mat_files = []
     for t_id, trial_str in enumerate(trial_strs):
     
-        drive_folder = KITTI_SEQS_DICT[trial_str]['date'] + '_drive_' + KITTI_SEQS_DICT[trial_str]['drive'] + '_sync'
-        data_path = os.path.join(kitti_path, KITTI_SEQS_DICT[trial_str]['date'], drive_folder)
-        tm_mat_file = os.path.join(tm_path, KITTI_SEQS_DICT[trial_str]['date'] + '_drive_' + KITTI_SEQS_DICT[trial_str]['drive'] + '.mat')
+        drive_folder = trial_str
+        data_path = os.path.join(kitti_path, drive_folder)
+        tm_mat_file = os.path.join(tm_path, drive_folder + '.mat')
 
         try:
             tm = TrajectoryMetrics.loadmat(tm_mat_file)
@@ -128,9 +128,9 @@ def main():
     # train_trials = ['04', '02', '05', '06', '07', '08', '09', '10']
     
     #Removed 01 and 04 (road trials)
-    all_trials = ['00','02','05','06', '07', '08', '09', '10']
+    all_trials = ['seq0']
 
-    #custom_training = [['00','06',['07','08','09','10']]]
+    custom_training = [['seq0','seq1',['seq0']]]
 
 
     train_pose_deltas = [1,2,3] #How far apart should each quad image be? (KITTI is at 10hz, can input multiple)
@@ -138,27 +138,27 @@ def main():
     add_reverse = False #Add reverse transformations
 
     #Where is the KITTI data?
-    kitti_path = '/media/m2-drive/datasets/KITTI/distorted_images'
+    kitti_path = '/home/zamzam/Thesis/VIO/field-data-supervised'
 
     #Where are the baseline TrajectoryMetrics mat files stored?
-    tm_path = '/media/raid5-array/experiments/Deep-PC/stereo_vo_results/baseline_distorted'
+    tm_path = '/home/zamzam/Thesis/VIO/field-data-supervised/baseline'
 
     #Where should we output the training files?
-    data_path = '/media/raid5-array/experiments/Deep-PC/training_pose_errors_pytorch/distorted'
+    data_path = '/home/zamzam/Thesis/VIO/field-supervised-processed'
 
     
-    for t_i, test_trial in enumerate(all_trials):
-        if t_i > 2:
-            break #Only produce trials for 00, 02 and 05
+    # for t_i, test_trial in enumerate(all_trials):
+    #     if t_i > 2:
+    #         break #Only produce trials for 00, 02 and 05
 
-        if test_trial == all_trials[-1]:
-            val_trial = all_trials[-2]
-            train_trials = all_trials[:-2]
-        else:
-            val_trial = all_trials[t_i+1]
-            train_trials = all_trials[:t_i] + all_trials[t_i+2 :]
+    #     if test_trial == all_trials[-1]:
+    #         val_trial = all_trials[-2]
+    #         train_trials = all_trials[:-2]
+    #     else:
+    #         val_trial = all_trials[t_i+1]
+    #         train_trials = all_trials[:t_i] + all_trials[t_i+2 :]
 
-    #for test_trial, val_trial, train_trials in custom_training:
+    for test_trial, val_trial, train_trials in custom_training:
 
         print('Processing.. Test: {}. Val: {}. Train: {}.'.format(test_trial, val_trial, train_trials))
 
